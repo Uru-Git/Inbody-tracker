@@ -10,6 +10,77 @@
 <title>InBody トラッカー</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- INFO MODAL -->
+<div class="info-overlay" id="info-modal" onclick="if(event.target===this)closeInfo()">
+  <div class="info-sheet">
+    <div class="info-header">
+      <div class="info-title" id="info-title"></div>
+      <button class="modal-close" onclick="closeInfo()">✕</button>
+    </div>
+    <div class="info-body" id="info-body"></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal" onclick="closeModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <div class="modal-title" id="edit-modal-title">記録を編集</div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-title">基本情報</div>
+      <div class="form-grid">
+        <div class="form-field"><label class="form-label">測定日</label><input type="date" id="e-date" class="form-input"></div>
+        <div class="form-field"><label class="form-label">体重 (kg)</label><input type="number" id="e-weight" class="form-input" step="0.1"></div>
+        <div class="form-field"><label class="form-label">身長 (cm)</label><input type="number" id="e-height" class="form-input" step="0.1"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-title">体組成</div>
+      <div class="form-grid">
+        <div class="form-field"><label class="form-label">筋肉量 (kg)</label><input type="number" id="e-muscle" class="form-input" step="0.1"></div>
+        <div class="form-field"><label class="form-label">体脂肪量 (kg)</label><input type="number" id="e-fat" class="form-input" step="0.1"></div>
+        <div class="form-field"><label class="form-label">体脂肪率 (%)</label><input type="number" id="e-fatpct" class="form-input" step="0.1"></div>
+        <div class="form-field"><label class="form-label">体水分量 (kg)</label><input type="number" id="e-water" class="form-input" step="0.1"></div>
+        <div class="form-field"><label class="form-label">タンパク質 (kg)</label><input type="number" id="e-protein" class="form-input" step="0.01"></div>
+        <div class="form-field"><label class="form-label">ミネラル (kg)</label><input type="number" id="e-mineral" class="form-input" step="0.01"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-title">評価指標</div>
+      <div class="form-grid">
+        <div class="form-field"><label class="form-label">BMI</label><input type="number" id="e-bmi" class="form-input" step="0.1"></div>
+        <div class="form-field"><label class="form-label">内臓脂肪指数</label><input type="number" id="e-visceral" class="form-input" step="1"></div>
+        <div class="form-field"><label class="form-label">腹囲 (cm)</label><input type="number" id="e-waist" class="form-input" step="0.1"></div>
+        <div class="form-field"><label class="form-label">発達点数</label><input type="number" id="e-score" class="form-input" step="1"></div>
+        <div class="form-field"><label class="form-label">基礎代謝 (kcal)</label><input type="number" id="e-bmr" class="form-input" step="1"></div>
+        <div class="form-field"><label class="form-label">適正体重 (kg)</label><input type="number" id="e-ideal" class="form-input" step="0.1"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-title">部位別筋肉量 (kg)</div>
+      <div class="form-grid">
+        <div class="form-field"><label class="form-label">右腕</label><input type="number" id="e-ra" class="form-input" step="0.01"></div>
+        <div class="form-field"><label class="form-label">左腕</label><input type="number" id="e-la" class="form-input" step="0.01"></div>
+        <div class="form-field"><label class="form-label">胴体</label><input type="number" id="e-trunk" class="form-input" step="0.1"></div>
+        <div class="form-field"><label class="form-label">右脚</label><input type="number" id="e-rl" class="form-input" step="0.01"></div>
+        <div class="form-field"><label class="form-label">左脚</label><input type="number" id="e-ll" class="form-input" step="0.01"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">筋肉発達程度 (%)</div>
+      <div class="form-grid-3">
+        <div class="form-field"><label class="form-label">胴体</label><input type="number" id="e-dtrunk" class="form-input" step="0.1"></div>
+        <div class="form-field"><label class="form-label">上半身</label><input type="number" id="e-dupper" class="form-input" step="0.1"></div>
+        <div class="form-field"><label class="form-label">下半身</label><input type="number" id="e-dlower" class="form-input" step="0.1"></div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="updateRecord()">保存する</button>
+    <div class="save-msg" id="edit-save-msg"></div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root {
@@ -22,64 +93,92 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--sans);color:var(--text)}
 .app{display:flex;flex-direction:column;height:100%;height:100dvh}
-.header{padding:14px 20px 12px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.header-title{font-size:17px;font-weight:700;letter-spacing:-.02em}
-.header-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+.header{
+  padding:0;
+  background:var(--text);
+  flex-shrink:0;
+  overflow:hidden;
+  position:relative;
+}
+.header-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px 13px;
+  position:relative;z-index:1;
+}
+.header-wordmark{display:flex;align-items:baseline;gap:6px}
+.header-title{
+  font-size:20px;font-weight:700;letter-spacing:-.03em;
+  color:#fff;font-family:var(--mono);
+}
+.header-title span{color:var(--accent-light,#6ee7b7)}
+.header-badge{
+  font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(255,255,255,0.45);font-family:var(--mono);
+  border:1px solid rgba(255,255,255,0.2);border-radius:4px;
+  padding:2px 5px;margin-left:2px;position:relative;top:-1px;
+}
+.header-sub{font-size:10px;color:rgba(255,255,255,0.35);font-family:var(--mono);margin-top:2px;letter-spacing:.06em}
+.header-icon{
+  width:36px;height:36px;background:rgba(255,255,255,0.08);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;border:1px solid rgba(255,255,255,0.12);
+}
 .content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px 16px calc(16px + var(--safe-bottom))}
-.nav{display:flex;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;padding-bottom:var(--safe-bottom)}
-.nav-btn{flex:1;border:none;background:transparent;padding:10px 4px 8px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--sans);display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
-.nav-btn.active{color:var(--accent)}
+.nav{display:flex;background:var(--text);border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;padding-bottom:var(--safe-bottom)}
+.nav-btn{flex:1;border:none;background:transparent;padding:10px 4px 8px;font-size:10px;color:rgba(255,255,255,0.35);cursor:pointer;font-family:var(--sans);display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
+.nav-btn.active{color:#6ee7b7}
 .nav-btn svg{width:22px;height:22px}
 .sec{display:none}.sec.active{display:block}
 .card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:14px 16px;margin-bottom:12px}
-.card-title{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
 .profile-bar{background:var(--text);color:#fff;border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .prof-item{text-align:center}
-.prof-label{font-size:9px;opacity:.5;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;font-family:var(--mono)}
-.prof-val{font-size:17px;font-weight:700;font-family:var(--mono)}
-.prof-unit{font-size:10px;opacity:.6}
+.prof-label{font-size:11px;opacity:.5;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;font-family:var(--mono)}
+.prof-val{font-size:18px;font-weight:700;font-family:var(--mono)}
+.prof-unit{font-size:11px;opacity:.6}
 .metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
-.metric-label{font-size:10px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;font-family:var(--mono);margin-bottom:4px}
-.metric-val{font-size:24px;font-weight:700;font-family:var(--mono);color:var(--text);letter-spacing:-.02em}
-.metric-unit{font-size:11px;color:var(--text3)}
-.metric-diff{font-size:11px;margin-top:3px;font-family:var(--mono)}
+.metric-label{font-size:12px;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;font-family:var(--mono);margin-bottom:4px}
+.metric-val{font-size:26px;font-weight:700;font-family:var(--mono);color:var(--text);letter-spacing:-.02em}
+.metric-unit{font-size:12px;color:var(--text3)}
+.metric-diff{font-size:14px;margin-top:3px;font-family:var(--mono)}
 .metric-diff .good{color:var(--good)}.metric-diff .bad{color:var(--bad)}
 .seg-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .seg-item{background:var(--surface2);border-radius:var(--radius-sm);padding:8px 6px;text-align:center}
-.seg-label{font-size:9px;color:var(--text3);margin-bottom:3px}
-.seg-val{font-size:15px;font-weight:700;font-family:var(--mono)}
-.seg-diff{font-size:10px;font-family:var(--mono);margin-top:2px}
+.seg-label{font-size:11px;color:var(--text3);margin-bottom:3px}
+.seg-val{font-size:16px;font-weight:700;font-family:var(--mono)}
+.seg-diff{font-size:11px;font-family:var(--mono);margin-top:2px}
 .comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .comp-row{background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
-.comp-label{font-size:11px;color:var(--text2)}
-.comp-val{font-size:13px;font-weight:700;font-family:var(--mono)}
-.comp-unit{font-size:10px;color:var(--text3)}
-.section-label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin:18px 0 8px;padding-left:2px;font-family:var(--mono)}
+.comp-tappable{cursor:pointer;transition:background .15s}
+.comp-tappable:active{background:var(--border)}
+.comp-label{font-size:12px;color:var(--text2)}
+.comp-val{font-size:14px;font-weight:700;font-family:var(--mono)}
+.comp-unit{font-size:11px;color:var(--text3)}
+.section-label{font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin:18px 0 8px;padding-left:2px;font-family:var(--mono)}
 .chart-wrap{position:relative;width:100%;height:180px}
 .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
-.legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);font-family:var(--mono)}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text3);font-family:var(--mono)}
 
 /* Axis range control */
 .axis-ctrl{display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap}
-.axis-ctrl label{font-size:10px;color:var(--text3);font-family:var(--mono);white-space:nowrap;width:16px}
+.axis-ctrl label{font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap;width:16px}
 .axis-input{width:56px;padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-family:var(--mono);text-align:center}
-.axis-btn{padding:4px 10px;font-size:11px;background:var(--text);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:var(--mono);white-space:nowrap}
+.axis-btn{padding:4px 10px;font-size:12px;background:var(--text);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:var(--mono);white-space:nowrap}
 .axis-sep{color:var(--text3);font-size:11px}
 
 /* Map axis controls */
 .map-ctrl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .map-ctrl-group{background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px}
-.map-ctrl-label{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:5px;font-weight:700;letter-spacing:.05em}
+.map-ctrl-label{font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:5px;font-weight:700;letter-spacing:.04em}
 .map-ctrl-row{display:flex;align-items:center;gap:4px}
 .map-input{width:48px;padding:3px 5px;font-size:12px;border:1px solid var(--border);border-radius:5px;background:#fff;color:var(--text);font-family:var(--mono);text-align:center}
-.map-btn{padding:4px 8px;font-size:11px;background:var(--text);color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:var(--mono);margin-top:5px;width:100%}
+.map-btn{padding:5px 8px;font-size:12px;background:var(--text);color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:var(--mono);margin-top:5px;width:100%}
 
 .form-section{margin-bottom:12px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .form-field{margin-bottom:10px}
-.form-label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500}
+.form-label{font-size:13px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500}
 .form-input{width:100%;padding:9px 12px;font-size:15px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:var(--mono);appearance:none;-webkit-appearance:none}
 .form-input:focus{outline:none;border-color:var(--accent)}
 .btn-primary{width:100%;padding:14px;background:var(--text);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans)}
@@ -88,6 +187,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--san
 .img-drop.has-img{border:2px solid var(--accent)}
 .btn-parse{width:100%;padding:12px;background:var(--accent3);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-bottom:8px;display:none}
 .parse-status{font-size:12px;color:var(--text2);min-height:18px;margin-bottom:10px;font-family:var(--mono)}
+.card-title{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px}
 .hist-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;position:relative}
 .hist-date{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:6px}
 .hist-row{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
@@ -97,13 +197,48 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--san
 .btn-del{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:2px 6px}
 canvas{display:block}
 .save-msg{font-size:12px;color:var(--accent);font-family:var(--mono);text-align:center;margin-top:8px;min-height:16px}
-</style>
+
+/* Edit modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-sheet{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-height:90dvh;overflow-y:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.modal-overlay.open .modal-sheet{transform:translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.modal-title{font-size:15px;font-weight:700;color:var(--text)}
+.modal-close{background:var(--surface2);border:none;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center}
+.hist-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;position:relative;cursor:pointer;transition:background .15s}
+.hist-item:active{background:var(--surface2)}
+.hist-edit-hint{font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:5px;text-align:right}
+/* Chart jump nav */
+.chart-jump-nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.jump-btn{padding:5px 10px;font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:20px;color:var(--text2);cursor:pointer;font-family:var(--mono);white-space:nowrap}
+.jump-btn:active{background:var(--surface2)}
+.back-top-btn{width:100%;text-align:center;padding:8px;font-size:11px;color:var(--text3);background:transparent;border:none;cursor:pointer;font-family:var(--mono);letter-spacing:.04em;margin-top:4px}
+.back-top-btn:active{color:var(--text)}
+/* Info modal */
+.info-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.info-overlay.open{opacity:1;pointer-events:all}
+.info-sheet{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;width:100%;padding:20px 20px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.info-overlay.open .info-sheet{transform:translateY(0)}
+.info-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.info-title{font-size:16px;font-weight:700;color:var(--text)}
+.info-body{font-size:14px;color:var(--text2);line-height:1.75}
+.metric-card{cursor:pointer;transition:background .15s}
+.metric-card:active{background:var(--surface2)}</style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <div><div class="header-title">InBody</div><div class="header-sub">体組成トラッカー</div></div>
-    <div style="font-size:22px">💪</div>
+    <div class="header-inner">
+      <div>
+        <div class="header-wordmark">
+          <div class="header-title">InBody<span>Tracker</span></div>
+          <div class="header-badge">by Uru</div>
+        </div>
+        <div class="header-sub">体組成トラッカー</div>
+      </div>
+      <div class="header-icon">💪</div>
+    </div>
   </div>
   <div class="content" id="content">
 
@@ -125,23 +260,23 @@ canvas{display:block}
     <div id="sec-add" class="sec">
       <div class="card">
         <div class="card-title">📷 画像から自動入力</div>
-        <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:11px 13px;font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:12px">
+        <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:9px 11px;font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:12px">
           <div style="font-weight:700;margin-bottom:3px;color:var(--text)">手順</div>
           <div>① 下のボタンで <strong>プロンプトをコピー</strong></div>
-          <div>② <a href="https://claude.ai" target="_blank" style="color:var(--accent);font-weight:700">claude.ai</a> を開き、測定票の画像を添付して貼り付けて送信</div>
-          <div>③ ClaudeのJSON出力をコピーして下の枠に貼り付け → 自動入力</div>
+          <div>② <a href="https://claude.ai" target="_blank" style="color:var(--accent);font-weight:700">claude.ai</a> を開き、画像を添付して貼り付けて送信</div>
+          <div>③ JSONをコピーして下の枠に貼り付け → 自動入力</div>
         </div>
 
         <!-- Step 1: copy prompt -->
-        <button class="btn-img" style="margin-bottom:10px" onclick="copyPrompt()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <button class="btn-img" style="margin-bottom:4px;font-size:13px;padding:9px 10px" onclick="copyPrompt()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           ① プロンプトをコピーする
         </button>
-        <div id="copy-msg" style="font-size:11px;color:var(--accent);font-family:var(--mono);min-height:14px;margin-bottom:10px;text-align:center"></div>
+        <div id="copy-msg" style="font-size:11px;color:var(--accent);font-family:var(--mono);min-height:12px;margin-bottom:4px;text-align:center"></div>
 
         <!-- Step 2: open claude -->
-        <a href="https://claude.ai" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:#7c3aed;color:#fff;border-radius:var(--radius);font-size:14px;font-weight:700;text-decoration:none;margin-bottom:14px">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <a href="https://claude.ai" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:9px 10px;background:#7c3aed;color:#fff;border-radius:var(--radius);font-size:13px;font-weight:700;text-decoration:none;margin-bottom:14px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           ② claude.ai を開く
         </a>
 
@@ -309,7 +444,7 @@ function renderDashboard(){
     <div class="prof-item"><div class="prof-label">年齢</div><div class="prof-val">${ageYears}<span class="prof-unit">歳</span></div></div>
     <div class="prof-item"><div class="prof-label">身長</div><div class="prof-val">${r.height||169}<span class="prof-unit">cm</span></div></div>
     <div class="prof-item"><div class="prof-label">性別</div><div class="prof-val" style="font-size:14px;font-family:var(--sans)">男性</div></div>
-    <div class="prof-item"><div class="prof-label">測定日</div><div class="prof-val" style="font-size:12px">${r.date.slice(5).replace('-','/')}</div></div>`;
+    <div class="prof-item"><div class="prof-label">測定日</div><div class="prof-val" style="font-size:16px">${r.date.slice(5).replace('-','/')}</div></div>`;
 
   function diff(cur,prv,lower=false){
     if(cur==null||prv==null)return '<span style="color:var(--text3)">—</span>';
@@ -319,45 +454,198 @@ function renderDashboard(){
     return `<span class="${g?'good':'bad'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(1)}</span>`;
   }
 
+  const ICONS={
+    weight:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`,
+    muscle:`<svg viewBox="0 0 28 24" xmlns="http://www.w3.org/2000/svg">
+      <!-- left outer plate: tall & wide -->
+      <rect x="0" y="3" width="4.5" height="18" rx="2" fill="currentColor"/>
+      <!-- left outer highlight -->
+      <rect x="0.8" y="4.5" width="2.2" height="15" rx="1.1" fill="white" opacity="0.45"/>
+      <!-- left inner plate -->
+      <rect x="4.5" y="6.5" width="3.5" height="11" rx="1.5" fill="currentColor"/>
+      <!-- left inner highlight -->
+      <rect x="5.2" y="7.5" width="1.8" height="9" rx="0.8" fill="white" opacity="0.45"/>
+      <!-- bar -->
+      <rect x="8" y="10.5" width="12" height="3" rx="1" fill="currentColor"/>
+      <!-- right inner plate -->
+      <rect x="20" y="6.5" width="3.5" height="11" rx="1.5" fill="currentColor"/>
+      <!-- right inner highlight -->
+      <rect x="20.7" y="7.5" width="1.8" height="9" rx="0.8" fill="white" opacity="0.45"/>
+      <!-- right outer plate: tall & wide -->
+      <rect x="23.5" y="3" width="4.5" height="18" rx="2" fill="currentColor"/>
+      <!-- right outer highlight -->
+      <rect x="24.3" y="4.5" width="2.2" height="15" rx="1.1" fill="white" opacity="0.45"/>
+    </svg>`,
+    fat:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6.5 5.5C6.5 4.2 7.5 3.5 8.8 3.5h6.4c1.3 0 2.3.7 2.3 2 .9.4 1.5 1.2 1.5 2.2s-.6 1.9-1.5 2.2v2c0 1.4-1 2.2-2.3 2.2H8.8c-1.3 0-2.3-.8-2.3-2.2V9.9C5.6 9.5 5 8.7 5 7.7s.6-1.8 1.5-2.2z"/>
+      <circle cx="2.8" cy="6.2" r="2" fill="white" stroke="currentColor"/>
+      <circle cx="2.8" cy="9.4" r="2" fill="white" stroke="currentColor"/>
+      <circle cx="21.2" cy="6.2" r="2" fill="white" stroke="currentColor"/>
+      <circle cx="21.2" cy="9.4" r="2" fill="white" stroke="currentColor"/>
+      <path d="M9.5 11.5q1.2-1 2.5 0"/>
+      <path d="M12 11.5q1.2-1 2.5 0"/>
+    </svg>`,
+    bmi:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><line x1="6" y1="21" x2="18" y2="21"/><path d="M6 9l-4 6h8L6 9z"/><path d="M18 9l-4 6h8l-4-6z"/><line x1="6" y1="9" x2="18" y2="9"/></svg>`,
+    fatpct:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>`,
+    score:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  };
+
   document.getElementById('db-cards').innerHTML=[
     ['体重','weight','kg',true],['筋肉量','muscle','kg',false],
     ['体脂肪量','fat','kg',true],['体脂肪率','fatpct','%',true],
     ['BMI','bmi','',true],['発達点数','score','点',false],
-  ].map(([l,k,u,lo])=>`<div class="metric-card">
+  ].map(([l,k,u,lo])=>`<div class="metric-card" style="position:relative;overflow:hidden" onclick="openInfo('${k}')">
+    <div style="position:absolute;top:6px;right:6px;width:56px;height:56px;opacity:.08;color:var(--text)">${ICONS[k]||''}</div>
+    <div style="position:absolute;top:8px;right:8px;font-size:9px;color:var(--text3);font-family:var(--mono);opacity:.5">ⓘ</div>
     <div class="metric-label">${l}</div>
     <div><span class="metric-val">${fmt(r[k],k==='score'?0:1)}</span><span class="metric-unit"> ${u}</span></div>
     <div class="metric-diff">${p?diff(r[k],p[k],lo):'—'}</div>
   </div>`).join('');
 
-  document.getElementById('db-seg').innerHTML=[['右腕','ra',2],['左腕','la',2],['胴体','trunk',1],['右脚','rl',2],['左脚','ll',2]].map(([l,k,d])=>{
-    const v=r[k],pv=p?.[k];
-    let dh='<span style="color:var(--text3)">—</span>';
-    if(v!=null&&pv!=null){const df=parseFloat(v)-parseFloat(pv);if(Math.abs(df)<0.01)dh='<span style="color:var(--text3)">→</span>';else dh=`<span class="${df>0?'good':'bad'}">${df>0?'▲':'▼'}${Math.abs(df).toFixed(2)}</span>`;}
-    return `<div class="seg-item"><div class="seg-label">${l}</div><div class="seg-val">${fmt(v,d)}</div><div class="seg-diff">${dh}</div></div>`;
-  }).join('');
+  // ── 部位別筋肉量：左に人体SVG・右にHTMLリスト ──
+  const SEG=[
+    {key:'ra',  label:'右腕', dec:2, fill:'#378ADD', bg:'#EFF6FF', border:'#378ADD', lc:'#1a5fa0'},
+    {key:'la',  label:'左腕', dec:2, fill:'#85B7EB', bg:'#EFF6FF', border:'#85B7EB', lc:'#1a5fa0'},
+    {key:'trunk',label:'胴体',dec:1, fill:'#E8C84A', bg:'#FFFBEA', border:'#C8A800', lc:'#8A7000'},
+    {key:'rl',  label:'右脚', dec:2, fill:'#D85A30', bg:'#FFF4EF', border:'#D85A30', lc:'#a03010'},
+    {key:'ll',  label:'左脚', dec:2, fill:'#F0997B', bg:'#FFF4EF', border:'#F0997B', lc:'#a03010'},
+  ];
+  function segDiff(v,pv){
+    if(v==null||pv==null)return{txt:'—',col:'#bbb'};
+    const d=parseFloat(v)-parseFloat(pv);
+    if(Math.abs(d)<0.005)return{txt:'→',col:'#bbb'};
+    return{txt:(d>0?'▲':'▼')+Math.abs(d).toFixed(2),col:d>0?'#1D9E75':'#D85A30'};
+  }
+
+  // 人体SVG（足を太く・左右余白均等）
+  const figSvg=`<svg viewBox="0 0 70 210" width="70" height="210" style="flex-shrink:0;display:block">
+    <circle cx="35" cy="16" r="14" fill="#555"/>
+    <rect x="22" y="29" width="26" height="66" rx="9" fill="#E8C84A"/>
+    <rect x="5"  y="32" width="15" height="54" rx="7" fill="#378ADD"/>
+    <rect x="50" y="32" width="15" height="54" rx="7" fill="#85B7EB"/>
+    <rect x="20" y="93" width="14" height="80" rx="6" fill="#D85A30"/>
+    <rect x="36" y="93" width="14" height="80" rx="6" fill="#F0997B"/>
+  </svg>`;
+
+  const listHtml=SEG.map(s=>{
+    const df=segDiff(r[s.key],p?.[s.key]);
+    return `<div style="display:flex;align-items:center;gap:6px;padding:0 10px;background:${s.bg};border-radius:8px;border-left:3px solid ${s.border};height:36px">
+      <span style="width:7px;height:7px;border-radius:50%;background:${s.fill};flex-shrink:0"></span>
+      <span style="font-size:12px;font-weight:700;color:${s.lc};width:28px;flex-shrink:0">${s.label}</span>
+      <span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text);flex:1">${fmt(r[s.key],s.dec)}<span style="font-size:9px;color:var(--text3);font-weight:400">kg</span></span>
+      <span style="font-size:12px;font-family:var(--mono);flex-shrink:0;color:${df.col}">${df.txt}</span>
+    </div>`;
+  }).join('<div style="height:3px"></div>');
+
+  document.getElementById('db-seg').innerHTML=`
+    <div style="display:flex;gap:14px;align-items:center;justify-content:center;padding-left:16px">
+      ${figSvg}
+      <div style="width:200px;flex-shrink:0;display:flex;flex-direction:column;gap:3px">${listHtml}</div>
+    </div>`;
 
   document.getElementById('db-comp').innerHTML=[
-    ['体水分量',fmt(r.water),'kg'],['タンパク質',fmt(r.protein),'kg'],
-    ['ミネラル',fmt(r.mineral,2),'kg'],['基礎代謝',r.bmr||'—','kcal'],
-    ['内臓脂肪',r.visceral||'—',''],['腹囲',r.waist||'—','cm'],
-    ['適正体重',fmt(r.ideal),'kg'],['発達点数',r.score||'—','点'],
-  ].map(([l,v,u])=>`<div class="comp-row"><span class="comp-label">${l}</span><span class="comp-val">${v}<span class="comp-unit"> ${u}</span></span></div>`).join('');
+    ['体水分量',fmt(r.water),'kg','water'],
+    ['タンパク質',fmt(r.protein),'kg','protein'],
+    ['ミネラル',fmt(r.mineral,2),'kg','mineral'],
+    ['基礎代謝',r.bmr||'—','kcal','bmr'],
+    ['内臓脂肪',r.visceral||'—','','visceral'],
+    ['腹囲',r.waist||'—','cm','waist'],
+    ['適正体重',fmt(r.ideal),'kg','ideal'],
+    ['発達点数',r.score||'—','点',null],
+  ].map(([l,v,u,key])=>`<div class="comp-row${key?' comp-tappable':''}" ${key?`data-key="${key}"`:''}><span class="comp-label">${l}${key?' <span style="font-size:9px;opacity:.4">ⓘ</span>':''}</span><span class="comp-val">${v}<span class="comp-unit"> ${u}</span></span></div>`).join('');
+
+  // attach events after DOM update
+  document.querySelectorAll('.comp-tappable').forEach(el=>{
+    el.addEventListener('click',()=>openInfo(el.dataset.key));
+  });
 }
 
 function renderHistory(){
   const root=document.getElementById('hist-root');
   if(!records.length){root.innerHTML='<p style="text-align:center;color:var(--text3);padding:2rem;font-size:13px">記録がありません</p>';return;}
-  root.innerHTML=[...records].reverse().map(r=>`
-    <div class="hist-item">
-      <div class="hist-date">${r.date}</div>
+  root.innerHTML=`<p style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:right;margin-bottom:8px;padding-right:2px">タップして編集 ✏️</p>`+
+  [...records].reverse().map(r=>`
+    <div class="hist-item" onclick="editRecord('${r.date}')">
+      <div class="hist-date" style="font-size:13px">${r.date}</div>
       <div class="hist-row">
-        <div class="hist-cell"><div class="hist-cell-label">体重</div><div class="hist-cell-val">${fmt(r.weight)}</div></div>
-        <div class="hist-cell"><div class="hist-cell-label">筋肉量</div><div class="hist-cell-val">${fmt(r.muscle)}</div></div>
-        <div class="hist-cell"><div class="hist-cell-label">体脂肪率</div><div class="hist-cell-val">${fmt(r.fatpct)}%</div></div>
-        <div class="hist-cell"><div class="hist-cell-label">発達点数</div><div class="hist-cell-val">${r.score||'—'}</div></div>
+        <div class="hist-cell"><div class="hist-cell-label" style="font-size:11px">体重</div><div class="hist-cell-val" style="font-size:17px">${fmt(r.weight)}</div></div>
+        <div class="hist-cell"><div class="hist-cell-label" style="font-size:11px">筋肉量</div><div class="hist-cell-val" style="font-size:17px">${fmt(r.muscle)}</div></div>
+        <div class="hist-cell"><div class="hist-cell-label" style="font-size:11px">体脂肪率</div><div class="hist-cell-val" style="font-size:17px">${fmt(r.fatpct)}%</div></div>
+        <div class="hist-cell"><div class="hist-cell-label" style="font-size:11px">点数</div><div class="hist-cell-val" style="font-size:17px">${r.score||'—'}</div></div>
       </div>
-      <button class="btn-del" onclick="del('${r.date}')">✕</button>
+      <button class="btn-del" onclick="event.stopPropagation();del('${r.date}')">✕</button>
     </div>`).join('');
+}
+
+const METRIC_INFO={
+  weight:{title:'体重',body:'体重は筋肉・脂肪・水分・骨などすべての重さの合計です。数値だけで健康状態を判断するのではなく、筋肉量や体脂肪量とあわせて確認することが大切です。\n\n身長169cmの場合の標準範囲：\n52.8〜71.4 kg（BMI 18.5〜25.0 より算出）\n\n※体重は参考値です。計算法上の取引・証明用には使えません。'},
+  muscle:{title:'筋肉量',body:'ここでいう筋肉は骨格筋を意味します。筋肉量が少ない場合は腰痛や膝関節痛の原因ともなりますので注意が必要です。筋肉量の維持を心がけましょう。\n\n標準範囲：26.7〜32.7 kg'},
+  fat:{title:'体脂肪量',body:'体脂肪はエネルギーの貯蔵や体温維持、臓器の保護などの役割を持ちますが、過剰になると生活習慣病のリスクが高まります。筋肉量とのバランスを意識しながら適正範囲を目指しましょう。\n\n標準範囲：7.6〜15.1 kg'},
+  fatpct:{title:'体脂肪率',body:'体重に占める脂肪の割合です。同じ体重でも筋肉量が多い人は体脂肪率が低くなります。体重だけでなく体脂肪率を把握することで、より正確な体型評価ができます。\n\n体脂肪率 ＝ 体脂肪(kg) ÷ 体重(kg) × 100\n\n標準範囲：10.0〜20.0 %'},
+  bmi:{title:'BMI',body:'BMI（体格指数）と体脂肪率を利用して体型を評価します。\n\nBMI ＝ 体重(kg) ÷ 身長²(m)\n\n標準範囲：18.5〜25.0 kg/m²'},
+  score:{title:'身体発達点数',body:'現在の体成分状態をわかりやすく点数化したものです。\n\n70点未満：弱い\n70点以上：標準\n80点以上：強い\n90点以上：とても強い\n\n筋肉が多くなるか、標準まで脂肪が調節されれば点数が上がります。'},
+  water:{title:'体水分量',body:'正常な人は体重の約50〜70%が水分です。体水分は摂取した栄養素を体の細胞に届け、残った老廃物を外に排出できるよう運搬の役割をしています。\n\n標準範囲：35.4〜43.2 kg'},
+  protein:{title:'タンパク質',body:'タンパク質は体水分と共に筋肉の主な構成成分です。タンパク質が足りないというのは細胞の栄養状態が良くないことを意味します。\n\n標準範囲：9.4〜11.6 kg'},
+  mineral:{title:'ミネラル',body:'ミネラルの約80%は骨にあり、人体を維持する役目を果たします。足りないと骨粗鬆症や骨折の危険性が高まります。運動してカルシウムを出来るだけ摂りましょう。\n\n標準範囲：3.27〜3.99 kg'},
+  bmr:{title:'基礎代謝量',body:'基礎代謝量は生命維持に最低限必要なエネルギー量です。値が高くなると消費エネルギーが高くなり体重調節がしやすくなります。\n\n1日摂取エネルギー量の目安は基礎代謝量を基に、身体活動レベルが低い場合から高い場合を考慮して算出したものです。'},
+  visceral:{title:'内臓脂肪指数',body:'臍周りを水平に切った腹部断面の内臓脂肪の多さを指数で表しています。男女を問わず100を超えたら注意が必要です。'},
+  waist:{title:'腹囲',body:'臍周りのサイズです。胴体のインピーダンスを直接測定することで、メジャー測定値との近似値が得られます。\n\n境界値：\n男性 85cm\n女性 90cm\n18歳未満 80cm'},
+  ideal:{title:'適正体重',body:'体成分バランスのとれた理想的な体になるための適正体重を示しています。'},
+};
+
+function openInfo(key){
+  const info=METRIC_INFO[key];if(!info)return;
+  document.getElementById('info-title').textContent=info.title;
+  document.getElementById('info-body').innerHTML=info.body.replace(/\n/g,'<br>');
+  document.getElementById('info-modal').classList.add('open');
+}
+function closeInfo(){
+  document.getElementById('info-modal').classList.remove('open');
+}
+
+let editingDate=null;
+
+function editRecord(date){
+  const r=records.find(x=>x.date===date);if(!r)return;
+  editingDate=date;
+  document.getElementById('edit-modal-title').textContent=date+' を編集';
+  const map={date:'e-date',height:'e-height',weight:'e-weight',muscle:'e-muscle',fat:'e-fat',
+    fatpct:'e-fatpct',bmi:'e-bmi',visceral:'e-visceral',waist:'e-waist',score:'e-score',
+    bmr:'e-bmr',ideal:'e-ideal',water:'e-water',protein:'e-protein',mineral:'e-mineral',
+    ra:'e-ra',la:'e-la',trunk:'e-trunk',rl:'e-rl',ll:'e-ll',
+    devTrunk:'e-dtrunk',devUpper:'e-dupper',devLower:'e-dlower'};
+  Object.entries(map).forEach(([k,id])=>{
+    const el=document.getElementById(id);
+    if(el) el.value=r[k]!=null?r[k]:'';
+  });
+  document.getElementById('edit-save-msg').textContent='';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeModalDirect(){
+  document.getElementById('edit-modal').classList.remove('open');
+}
+function closeModal(e){
+  if(e.target===document.getElementById('edit-modal')) closeModalDirect();
+}
+
+function updateRecord(){
+  const v=id=>{const x=parseFloat(document.getElementById(id).value);return isNaN(x)?null:x;};
+  const newDate=document.getElementById('e-date').value;
+  if(!newDate){alert('測定日を入力してください');return;}
+  const updated={date:newDate,height:v('e-height'),weight:v('e-weight'),muscle:v('e-muscle'),
+    fat:v('e-fat'),fatpct:v('e-fatpct'),bmi:v('e-bmi'),visceral:v('e-visceral'),waist:v('e-waist'),
+    score:v('e-score'),bmr:v('e-bmr'),ideal:v('e-ideal'),water:v('e-water'),protein:v('e-protein'),
+    mineral:v('e-mineral'),ra:v('e-ra'),la:v('e-la'),trunk:v('e-trunk'),rl:v('e-rl'),ll:v('e-ll'),
+    devTrunk:v('e-dtrunk'),devUpper:v('e-dupper'),devLower:v('e-dlower')};
+  // Remove old entry (handles date change too)
+  records=records.filter(r=>r.date!==editingDate);
+  records.push(updated);
+  records.sort((a,b)=>a.date.localeCompare(b.date));
+  saveStorage();renderAll();mapsDrawn=false;chartsBuilt=false;
+  const m=document.getElementById('edit-save-msg');
+  m.textContent='✅ 保存しました';
+  setTimeout(()=>closeModalDirect(),900);
 }
 
 function del(date){
@@ -496,8 +784,8 @@ function renderCharts(){
 
   function card(title,legH,cid){
     const def=chartDefaults[cid];
-    const div=document.createElement('div');div.className='card';
-    div.innerHTML=`<div class="card-title">${title}</div><div class="legend">${legH}</div>${axisCtrl(cid,def)}<div class="chart-wrap"><canvas id="${cid}"></canvas></div>`;
+    const div=document.createElement('div');div.className='card';div.id='card-'+cid;
+    div.innerHTML=`<div class="card-title">${title}</div><div class="legend">${legH}</div>${axisCtrl(cid,def)}<div class="chart-wrap"><canvas id="${cid}"></canvas></div><button class="back-top-btn" onclick="document.getElementById('content').scrollTop=0">↑ トップへ戻る</button>`;
     root.appendChild(div);
 
     // Wire up buttons after DOM is ready — avoids onclick/window[] timing issues
@@ -541,11 +829,25 @@ function renderCharts(){
     });
   }
 
-  function sl(t){const p=document.createElement('div');p.className='section-label';p.textContent=t;root.appendChild(p);}
+  function sl(t,id){
+    const p=document.createElement('div');p.className='section-label';
+    if(id)p.id='sl-'+id;
+    p.textContent=t;root.appendChild(p);
+  }
   function ds(l,k,c,d){return{label:l,raw:get(k),color:c,dash:d};}
   function rf(l,v,c){return{label:l,val:v,color:c};}
 
-  sl('体重・体組成');
+  // Jump nav — 14 individual charts
+  const nav=document.createElement('div');nav.className='chart-jump-nav';
+  nav.innerHTML=[
+    ['体重','c-w'],['筋肉量','c-m'],['体脂肪量','c-f'],['体脂肪率','c-fp'],
+    ['発達点数','c-sc'],['BMI','c-bmi'],['基礎代謝','c-bmr'],['内臓脂肪','c-vis'],
+    ['腕','c-arms'],['脚','c-legs'],['胴体','c-trunk'],
+    ['体水分量','c-wat'],['タンパク質','c-pro'],['ミネラル','c-min'],
+  ].map(([l,id])=>`<button class="jump-btn" onclick="document.getElementById('card-${id}')?.scrollIntoView({behavior:'smooth',block:'start'})">${l}</button>`).join('');
+  root.appendChild(nav);
+
+  sl('体重・体組成','comp');
   card('体重 (kg)',leg('#378ADD','体重')+leg(G70,'70点',true)+leg(G80,'80点',true)+leg(G90,'90点',true),'c-w');
   mkChart('c-w',[ds('体重','weight','#378ADD')],[rf('70',64.5,G70),rf('80',63.5,G80),rf('90',62.5,G90)],61,68);
   card('筋肉量 (kg)',leg('#1D9E75','筋肉量')+leg(G70,'70点',true)+leg(G80,'80点',true)+leg(G90,'90点',true),'c-m');
@@ -554,7 +856,7 @@ function renderCharts(){
   mkChart('c-f',[ds('体脂肪量','fat','#D85A30')],[rf('70',12.5,G70),rf('80',11.0,G80),rf('90',9.0,G90)],7,14);
   card('体脂肪率 (%)',leg('#D85A30','体脂肪率')+leg(G70,'70点',true)+leg(G80,'80点',true)+leg(G90,'90点',true),'c-fp');
   mkChart('c-fp',[ds('体脂肪率','fatpct','#D85A30')],[rf('70',19,G70),rf('80',17,G80),rf('90',15,G90)],13,22);
-  sl('評価指標');
+  sl('評価指標','eval');
   card('発達点数',leg('#7F77DD','発達点数')+leg(G70,'70',true)+leg(G80,'80',true)+leg(G90,'90',true),'c-sc');
   mkChart('c-sc',[ds('発達点数','score','#7F77DD')],[rf('70',70,G70),rf('80',80,G80),rf('90',90,G90)],65,95);
   card('BMI',leg('#BA7517','BMI')+leg('#aaa','標準',true),'c-bmi');
@@ -563,14 +865,14 @@ function renderCharts(){
   mkChart('c-bmr',[ds('基礎代謝','bmr','#534AB7')],[rf('70',1540,G70),rf('80',1570,G80),rf('90',1600,G90)],1480,1630);
   card('内臓脂肪指数',leg('#D4537E','内臓脂肪')+leg(G70,'70点',true)+leg(G80,'80点',true)+leg(G90,'90点',true),'c-vis');
   mkChart('c-vis',[ds('内臓脂肪','visceral','#D4537E')],[rf('70',50,G70),rf('80',40,G80),rf('90',30,G90)],20,65);
-  sl('部位別筋肉量');
+  sl('部位別筋肉量','seg');
   card('腕 (kg)',leg('#378ADD','右腕')+leg('#85B7EB','左腕')+leg(G70,'70点',true)+leg(G80,'80点',true)+leg(G90,'90点',true),'c-arms');
   mkChart('c-arms',[ds('右腕','ra','#378ADD'),ds('左腕','la','#85B7EB',[4,2])],[rf('70',3.0,G70),rf('80',3.2,G80),rf('90',3.5,G90)],2.5,3.9);
   card('脚 (kg)',leg('#D85A30','右脚')+leg('#F0997B','左脚')+leg(G70,'70点',true)+leg(G80,'80点',true)+leg(G90,'90点',true),'c-legs');
   mkChart('c-legs',[ds('右脚','rl','#D85A30'),ds('左脚','ll','#F0997B',[4,2])],[rf('70',8.5,G70),rf('80',9.0,G80),rf('90',9.5,G90)],7.8,10.2);
   card('胴体 (kg)',leg('#7F77DD','胴体')+leg(G70,'70点',true)+leg(G80,'80点',true)+leg(G90,'90点',true),'c-trunk');
   mkChart('c-trunk',[ds('胴体','trunk','#7F77DD')],[rf('70',24.5,G70),rf('80',25.5,G80),rf('90',26.5,G90)],23,27.5);
-  sl('体組成成分');
+  sl('体組成成分','compo');
   card('体水分量 (kg)',leg('#185FA5','体水分量')+leg('#aaa','標準',true),'c-wat');
   mkChart('c-wat',[ds('体水分量','water','#185FA5')],[rf('下',35.4,'#aaa'),rf('上',43.2,'#aaa')],33,45);
   card('タンパク質 (kg)',leg('#1D9E75','タンパク質')+leg('#aaa','標準',true),'c-pro');
@@ -608,7 +910,11 @@ function renderMaps(){
   const legH=`<div class="legend"><div class="legend-item"><span style="display:inline-block;width:24px;height:6px;border-radius:3px;background:linear-gradient(to right,#d0d0d0,#111)"></span>古い→新</div><div class="legend-item"><svg width="11" height="11" viewBox="-6 -6 12 12"><polygon points="0,-5.5 1.6,-1.8 5.5,-1.8 2.3,0.9 3.4,5.5 0,3.2 -3.4,5.5 -2.3,0.9 -5.5,-1.8 -1.6,-1.8" fill="#FFD700" stroke="#000" stroke-width="1"/></svg>最新</div></div>`;
 
   root.innerHTML=`
-    <div class="card">
+    <div class="chart-jump-nav">
+      <button class="jump-btn" onclick="document.getElementById('map-vis')?.scrollIntoView({behavior:'smooth',block:'start'})">内臓脂肪指数マップ</button>
+      <button class="jump-btn" onclick="document.getElementById('map-body')?.scrollIntoView({behavior:'smooth',block:'start'})">体型マップ</button>
+    </div>
+    <div class="card" id="map-vis">
       <div class="card-title">内臓脂肪指数マップ</div>
       ${legH}
       <div class="map-ctrl">
@@ -630,8 +936,9 @@ function renderMaps(){
         </div>
       </div>
       <canvas id="cv" width="600" height="340" style="width:100%;height:auto"></canvas>
+      <button class="back-top-btn" onclick="document.getElementById('content').scrollTop=0">↑ トップへ戻る</button>
     </div>
-    <div class="card">
+    <div class="card" id="map-body">
       <div class="card-title">体型マップ</div>
       ${legH}
       <div class="map-ctrl">
@@ -653,6 +960,7 @@ function renderMaps(){
         </div>
       </div>
       <canvas id="cb" width="600" height="480" style="width:100%;height:auto"></canvas>
+      <button class="back-top-btn" onclick="document.getElementById('content').scrollTop=0">↑ トップへ戻る</button>
     </div>`;
 
   drawVisMap();
@@ -701,12 +1009,11 @@ function drawVisMap(){
   const cv=document.getElementById('cv');
   if(!cv)return;
   const W=cv.width,H=cv.height,ctx=cv.getContext('2d');
-  const PAD={l:46,r:18,t:18,b:40},PW=W-PAD.l-PAD.r,PH=H-PAD.t-PAD.b;
+  const PAD={l:62,r:22,t:26,b:54},PW=W-PAD.l-PAD.r,PH=H-PAD.t-PAD.b;
   const {xMin:XMIN,xMax:XMAX,yMin:YMIN,yMax:YMAX}=mapState.vis;
   const px=x=>PAD.l+(x-XMIN)/(XMAX-XMIN)*PW;
   const py=y=>PAD.t+(1-(y-YMIN)/(YMAX-YMIN))*PH;
-  const FS=11; // uniform font size
-
+  const FS=18; // uniform font size
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
 
@@ -776,13 +1083,13 @@ function drawBodyMap(){
   const cb=document.getElementById('cb');
   if(!cb)return;
   const W=cb.width,H=cb.height,ctx=cb.getContext('2d');
-  const PAD={l:46,r:66,t:26,b:40},PW=W-PAD.l-PAD.r,PH=H-PAD.t-PAD.b;
+  const PAD={l:62,r:86,t:34,b:54},PW=W-PAD.l-PAD.r,PH=H-PAD.t-PAD.b;
   const {xMin:XMIN,xMax:XMAX,yMin:YMIN,yMax:YMAX}=mapState.body;
   const px=x=>PAD.l+(x-XMIN)/(XMAX-XMIN)*PW;
   const py=y=>PAD.t+(1-(y-YMIN)/(YMAX-YMIN))*PH;
   const cX=x=>Math.max(XMIN,Math.min(XMAX,x));
   const cY=y=>Math.max(YMIN,Math.min(YMAX,y));
-  const FS=11; // uniform font size — same as zone labels
+  const FS=18; // uniform font size — same as zone labels
 
   ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
 
